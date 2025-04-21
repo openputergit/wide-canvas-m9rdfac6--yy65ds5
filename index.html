@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Skeuomorphism styling */
+        .skeuomorphic-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            box-shadow: 6px 6px 16px rgba(0,0,0,0.1),
+                       -6px -6px 16px rgba(255,255,255,0.7);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.8);
+            overflow: hidden;
+        }
+
+        .skeuomorphic-button {
+            background: linear-gradient(135deg, #ffffff, #f3f4f6);
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.1),
+                       -3px -3px 10px rgba(255,255,255,0.7);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: all 0.2s ease;
+        }
+
+        .skeuomorphic-button:active {
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1),
+                       inset -2px -2px 5px rgba(255,255,255,0.7);
+            transform: translateY(1px);
+        }
+
+        .skeuomorphic-input {
+            background: #f9fafb;
+            box-shadow: inset 3px 3px 7px rgba(0,0,0,0.05),
+                       inset -3px -3px 7px rgba(255,255,255,0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .skeuomorphic-input:focus {
+            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.07),
+                       inset -4px -4px 8px rgba(255,255,255,0.6);
+            outline: none;
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            background: linear-gradient(90deg, rgba(255,255,255,0.7), rgba(249,250,251,0.7));
+        }
+
+        .table-row:hover {
+            transform: translateX(3px);
+            box-shadow: -4px 0px 0px #4f46e5;
+            background: linear-gradient(90deg, rgba(243,244,255,0.7), rgba(249,250,251,0.7));
+        }
+
+        .hidden-info {
+            filter: blur(5px);
+            transition: filter 0.3s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .chip-icon {
+            width: 36px;
+            height: 28px;
+            background: linear-gradient(135deg, #ffdc3c, #f2b807);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .chip-icon::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 30%;
+            background: rgba(255,255,255,0.3);
+            top: 20%;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+            min-width: 200px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1),
+                      -3px -3px 10px rgba(255,255,255,0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.8);
+            transform-origin: top right;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-content.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .progress-bar-bg {
+            background-color: rgba(226, 232, 240, 0.6);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+
+        .progress-bar-blue {
+            background: linear-gradient(90deg, #60a5fa, #3b82f6);
+            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        .progress-bar-green {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            box-shadow: 0 1px 2px rgba(34, 197, 94, 0.3);
+            border-radius: 10px;
+        }
+
+        .progress-bar-purple {
+            background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+            box-shadow: 0 1px 2px rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        .status-active {
+            background: linear-gradient(90deg, #dcfce7, #bbf7d0);
+            color: #047857;
+            box-shadow: 1px 1px 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .status-blocked {
+            background: linear-gradient(90deg, #fee2e2, #fecaca);
+            color: #b91c1c;
+            box-shadow: 1px 1px 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .table-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .loader {
+            border-top-color: #4f46e5;
+            animation: spinner 0.8s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .card-number-format {
+            letter-spacing: 1px;
+        }
+
+        /* Responsive table styles */
+        .responsive-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 12px;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .mobile-label {
+                font-size: 0.75rem;
+                color: #6b7280;
+                margin-bottom: 0.25rem;
+                font-weight: 600;
+            }
+
+            .mobile-row {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .mobile-full {
+                grid-column: span 2;
+            }
+            
+            .mobile-card-details {
+                background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+                padding: 1rem;
+                border-radius: 8px;
+                box-shadow: inset 2px 2px 5px rgba(0,0,0,0.03);
+            }
+        }
+
+        /* Custom hover effects for buttons */
+        .hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                        0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        /* Custom animations */
+        .pulse-on-hover:hover {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .8;
+            }
+        }
+
+        /* Embossed text */
+        .embossed-text {
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.5),
+                         -1px -1px 1px rgba(0,0,0,0.05);
+        }
+        
+        /* Card count badges */
+        .card-count-badge {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Background decoration */
+        .bg-decoration {
+            position: fixed;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .bg-circle-1 {
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, rgba(79, 70, 229, 0) 70%);
+            top: -200px;
+            right: -200px;
+        }
+        
+        .bg-circle-2 {
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0) 70%);
+            bottom: -250px;
+            left: -250px;
+        }
+        
+        /* Enhanced card styling */
+        .card-info-container {
+            transition: all 0.3s ease;
+        }
+        
+        .card-info-container:hover {
+            background-color: rgba(79, 70, 229, 0.03);
+        }
+        
+        /* Statistic cards */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.1),
+                       -2px -2px 6px rgba(255,255,255,0.5);
+        }
+        
+        /* Donut chart */
+        .donut-chart {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            border-radius: 50%;
+        }
+        
+        .donut-segment {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            clip: rect(0, 120px, 120px, 60px);
+        }
+        
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05),
+                        inset -2px -2px 5px rgba(255,255,255,0.8);
+        }
+    </style>
+</head>
+<body class="w-full">
+    <!-- Background decorations -->
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+
+    <div class="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 mx-auto">
+        <!-- Top Stats Row -->
+        <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+            <div class="flex items-center">
+                <i class="bi bi-credit-card text-indigo-600 text-3xl mr-3"></i>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 embossed-text">Cards Dashboard</h1>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="skeuomorphic-card py-2 px-4 flex items-center">
+                    <div class="w-3 h-3 rounded-full bg-indigo-500 mr-2"></div>
+                    <span class="text-sm font-medium text-gray-600">Total:</span>
+                    <span class="ml-2 font-bold text-indigo-600" id="total-cards">0</span>
+                </div>
+                <div class="skeuomorphic-card py-2 px-4 flex items-center">
+                    <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <span class="text-sm font-medium text-gray-600">Active:</span>
+                    <span class="ml-2 font-bold text-green-600" id="active-cards">0</span>
+                </div>
+                <div class="skeuomorphic-card py-2 px-4 flex items-center">
+                    <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    <span class="text-sm font-medium text-gray-600">Blocked:</span>
+                    <span class="ml-2 font-bold text-red-600" id="blocked-cards">0</span>
+                </div>
+                <button id="add-card-btn" class="skeuomorphic-button py-2.5 px-5 text-indigo-700 font-semibold flex items-center hover-effect">
+                    <i class="bi bi-plus-lg mr-2"></i> Add New Card
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics and Summary Section -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+            <!-- Transaction Statistics -->
+            <div class="md:col-span-4">
+                <div class="skeuomorphic-card p-6 h-full">
+                    <h2 class="text-lg font-semibold text-gray-700 embossed-text mb-5">Today's Transactions</h2>
+                    <div class="flex justify-center">
+                        <div class="donut-chart">
+                            <div class="flex items-center justify-center h-full">
+                                <div class="relative w-24 h-24">
+                                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6e6e6" stroke-width="3" />
+                                        <path id="transaction-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#4f46e5" stroke-width="3" stroke-dasharray="75, 100" />
+                                    </svg>
+                                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                                        <div class="text-2xl font-bold text-indigo-600" id="transaction-percent">75%</div>
+                                        <div class="text-xs text-gray-500">Completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 grid grid-cols-2 gap-2">
+                        <div class="p-4 bg-indigo-50 rounded-lg">
+                            <div class="text-sm text-gray-600 mb-1">Total Transactions</div>
+                            <div class="text-xl font-bold text-indigo-700" id="total-transactions">₹87,50,000</div>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <div class="text-sm text-gray-600 mb-1">Completed</div>
+                            <div class="text-xl font-bold text-green-600" id="completed-transactions">₹65,62,500</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card Performance Statistics -->
+            <div class="md:col-span-4">
+                <div class="skeuomorphic-card p-6 h-full">
+                    <h2 class="text-lg font-semibold text-gray-700 embossed-text mb-5">Card Performance</h2>
+                    <div class="space-y-5">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="text-sm font-medium text-gray-700">Completed Cards</div>
+                                <div class="text-sm font-bold text-green-600" id="completed-cards-count">0</div>
+                            </div>
+                            <div class="progress-bar-bg h-2.5">
+                                <div class="progress-bar-green h-2.5" id="completed-cards-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="text-sm font-medium text-gray-700">Working Cards</div>
+                                <div class="text-sm font-bold text-blue-600" id="working-cards-count">0</div>
+                            </div>
+                            <div class="progress-bar-bg h-2.5">
+                                <div class="progress-bar-blue h-2.5" id="working-cards-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="text-sm font-medium text-gray-700">Not Started</div>
+                                <div class="text-sm font-bold text-purple-600" id="not-started-cards-count">0</div>
+                            </div>
+                            <div class="progress-bar-bg h-2.5">
+                                <div class="progress-bar-purple h-2.5" id="not-started-cards-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 p-4 bg-gray-50 rounded-lg">
+                        <div class="text-sm text-gray-600 mb-1">Average Transaction per Card</div>
+                        <div class="text-xl font-bold text-gray-700" id="avg-transaction">₹8,75,000</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Search & Filters -->
+            <div class="md:col-span-4">
+                <div class="skeuomorphic-card p-6 h-full">
+                    <h2 class="text-lg font-semibold text-gray-700 embossed-text mb-4">Quick Search & Filters</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="relative">
+                                <input type="text" id="search-input" class="skeuomorphic-input w-full p-3.5 pr-10 text-gray-700 focus:outline-none" placeholder="Search by name or card number...">
+                                <i class="bi bi-search absolute right-4 top-4 text-gray-500"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <select id="status-filter" class="skeuomorphic-input w-full p-3.5 text-gray-700 focus:outline-none">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="blocked">Blocked</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="type-filter" class="skeuomorphic-input w-full p-3.5 text-gray-700 focus:outline-none">
+                                <option value="all">All Card Types</option>
+                                <option value="Rupay">Rupay</option>
+                                <option value="visa">Visa</option>
+                                <option value="personal">Personal</option>
+                                <option value="business">Business</option>
+                                <option value="credit">Credit</option>
+                                <option value="debit">Debit</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 flex justify-center">
+                        <button id="export-data" class="skeuomorphic-button py-2.5 px-5 text-indigo-700 font-semibold flex items-center hover-effect">
+                            <i class="bi bi-download mr-2"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards List Table -->
+        <div class="skeuomorphic-card p-0 overflow-hidden mb-6">
+            <div id="loading-indicator" class="hidden">
+                <div class="flex justify-center items-center p-8">
+                    <div class="loader h-10 w-10 border-4 border-gray-300 rounded-full"></div>
+                    <span class="ml-3 font-medium">Loading cards...</span>
+                </div>
+            </div>
+
+            <div class="responsive-table">
+                <!-- Table for desktop -->
+                <table class="w-full hidden md:table">
+                    <thead class="table-header">
+                        <tr>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Card Type</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Status</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Card Number</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Expiry</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">CVV</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Card Holder</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Phone</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Serial No.</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Transaction</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700 embossed-text">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cards-list">
+                        <!-- Card data will be inserted here -->
+                    </tbody>
+                </table>
+
+                <!-- Mobile view of cards -->
+                <div class="md:hidden" id="mobile-cards-list">
+                    <!-- Card data will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="skeuomorphic-card p-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <div class="flex space-x-4">
+                    <span class="text-sm font-medium text-gray-700" id="cards-count">Showing cards</span>
+                </div>
+                <div class="mt-3 sm:mt-0">
+                    <span class="text-sm text-gray-500">Last updated: <span id="last-updated">Today, 12:45 PM</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            
+            try {
+                const response = await fetch('https://rdjm.in/cards_portal/api/corp_indus_rupay_cards.php');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const liveCards = data.cards || [];
+
+                displayCards(liveCards);
+                updateCardStatistics(liveCards);
+
+                // Update card counts
+                document.getElementById('total-cards').textContent = data.total_cards || liveCards.length;
+                document.getElementById('active-cards').textContent = data.active_cards || liveCards.filter(card => card.status === 'active').length;
+                document.getElementById('blocked-cards').textContent = data.blocked_cards || liveCards.filter(card => card.status === 'blocked').length;
+                document.getElementById('cards-count').textContent = `Showing ${data.total_cards || liveCards.length} cards`;
+
+                // Set last updated time
+                const now = new Date();
+                document.getElementById('last-updated').textContent = now.toLocaleString('en-US', { 
+                    hour: 'numeric', 
+                    minute: 'numeric',
+                    hour12: true,
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+            } catch (error) {
+                console.error("Could not fetch card data:", error);
+                // Fallback to demo data
+                const demoCards = generateDemoCardData(8);
+                displayCards(demoCards);
+                updateCardStatistics(demoCards);
+                document.getElementById('total-cards').textContent = demoCards.length;
+                document.getElementById('active-cards').textContent = demoCards.filter(card => card.status === 'active').length;
+                document.getElementById('blocked-cards').textContent = demoCards.filter(card => card.status === 'blocked').length;
+                document.getElementById('cards-count').textContent = `Showing ${demoCards.length} demo cards`;
+            } finally {
+                document.getElementById('loading-indicator').classList.add('hidden');
+            }
+        }
+
+        function updateCardStatistics(cards) {
+            // Transaction Statistics
+            const transactionPercent = 75; // Demo value - would be calculated from real data
+            document.getElementById('transaction-percent').textContent = `${transactionPercent}%`;
+            document.getElementById('transaction-progress').setAttribute('stroke-dasharray', `${transactionPercent}, 100`);
+            
+            // Total transaction amount (Demo values)
+            const totalTransactionAmount = 8750000; // ₹87,50,000
+            const completedTransactionAmount = totalTransactionAmount * (transactionPercent / 100);
+            
+            document.getElementById('total-transactions').textContent = formatCurrency(totalTransactionAmount);
+            document.getElementById('completed-transactions').textContent = formatCurrency(completedTransactionAmount);
+            
+            // Card Performance Statistics
+            const completionThreshold = 960000; // ₹9,60,000
+            const completedCards = cards.filter(card => card.progress >= 96);
+            const workingCards = cards.filter(card => card.progress > 0 && card.progress < 96);
+            const notStartedCards = cards.filter(card => card.progress === 0);
+            
+            const completedCount = completedCards.length;
+            const workingCount = workingCards.length;
+            const notStartedCount = notStartedCards.length;
+            const totalCount = cards.length;
+            
+            // Update counts
+            document.getElementById('completed-cards-count').textContent = completedCount;
+            document.getElementById('working-cards-count').textContent = workingCount;
+            document.getElementById('not-started-cards-count').textContent = notStartedCount;
+            
+            // Update progress bars
+            document.getElementById('completed-cards-bar').style.width = `${(completedCount / totalCount) * 100}%`;
+            document.getElementById('working-cards-bar').style.width = `${(workingCount / totalCount) * 100}%`;
+            document.getElementById('not-started-cards-bar').style.width = `${(notStartedCount / totalCount) * 100}%`;
+            
+            // Average transaction per card
+            document.getElementById('avg-transaction').textContent = formatCurrency(totalTransactionAmount / totalCount);
+        }
+
+        function formatCurrency(amount) {
+            // Format as Indian currency with commas (e.g. ₹10,00,000)
+            const formatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            return formatter.format(amount);
+        }
+
+        function generateDemoCardData(count) {
+            const cards = [];
+            const cardTypes = ['Rupay', 'Visa', 'Mastercard'];
+            const statuses = ['active', 'blocked'];
+            
+            for (let i = 0; i < count; i++) {
+                const cardType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const progress = Math.floor(Math.random() * 100);
+                
+                cards.push({
+                    type: cardType,
+                    status: status,
+                    number: `4${Math.floor(Math.random() * 1000).toString().padStart(3, '0')} ${Math.floor(Math.random() * 10000).toString().padStart(4, '0')} ${Math.floor(Math.random() * 10000).toString().padStart(4, '0')} ${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+                    expiry: `${Math.floor(Math.random() * 12) + 1}/${Math.floor(Math.random() * 5) + 23}`,
+                    cvv: `${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+                    holder: `User ${i + 1}`,
+                    phone: `+91 ${Math.floor(Math.random() * 10000000000).toString().padStart(10, '0')}`,
+                    serial: `SN${Math.floor(Math.random() * 100000000).toString().padStart(8, '0')}`,
+                    progress: progress,
+                    progress_display: `${progress}% Complete`,
+                    progress_class: progress < 33 ? 'progress-bar-blue' : progress < 66 ? 'progress-bar-purple' : 'progress-bar-green'
+                });
+            }
+            
+            return cards;
+        }
+
+        function formatCardNumber(cardNumber) {
+            // Check if the card number is already formatted
+            if (cardNumber.includes('*') || cardNumber.includes('X')) {
+                return cardNumber;
+            }
+            
+            // Format as **** **** **** 1234 (last 4 digits visible)
+            const parts = cardNumber.trim().split(' ');
+            if (parts.length === 4) {
+                return `**** **** **** ${parts[3]}`;
+            }
+            
+            // Fallback for non-standard formats
+            const digits = cardNumber.replace(/\D/g, '');
+            const lastFour = digits.slice(-4);
+            const maskedPart = '**** '.repeat(3);
+            return `${maskedPart}${lastFour}`;
+        }
+
+        function displayCards(liveCards) {
+            const tbody = document.getElementById('cards-list');
+            const mobileList = document.getElementById('mobile-cards-list');
+            tbody.innerHTML = '';
+            mobileList.innerHTML = '';
+
+            liveCards.forEach((card, index) => {
+                const statusClass = card.status === 'blocked' ? 'status-blocked' : 'status-active';
+                const formattedCardNumber = formatCardNumber(card.number);
+                const delay = index * 50; // Stagger animation delay
+
+                // Desktop Table Row
+                const tr = document.createElement('tr');
+                tr.className = `table-row`;
+                tr.setAttribute('data-status', card.status);
+                tr.setAttribute('data-type', card.type.toLowerCase());
+                tr.style.opacity = '0';
+                tr.style.transform = 'translateY(10px)';
+                tr.style.transition = `opacity 0.3s ease ${delay}ms, transform 0.3s ease ${delay}ms`;
+                
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <div class="flex items-center">
+                            <div class="chip-icon mr-3"></div>
+                            <span class="text-sm font-medium">${card.type}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="px-3 py-1.5 rounded-full text-xs ${statusClass} font-semibold">${card.status.charAt(0).toUpperCase() + card.status.slice(1)}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="hidden-info card-info card-number-format font-mono text-sm" data-hidden="true" data-original="${card.number}">${formattedCardNumber}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="hidden-info card-info font-mono text-sm" data-hidden="true" data-original="${card.expiry}">**/**</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="hidden-info card-info font-mono text-sm" data-hidden="true" data-original="${card.cvv}">***</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="text-sm font-semibold">${card.holder}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="text-sm">${card.phone}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="text-sm font-mono">${card.serial}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="w-32">
+                            <div class="relative">
+                                <div class="progress-bar-bg h-2.5">
+                                    <div class="${card.progress_class} h-2.5" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="text-xs mt-1.5 font-medium">${card.progress_display}</div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="flex justify-end items-center relative">
+                            <button class="show-details-btn skeuomorphic-button p-2 mr-2 text-indigo-600 hover-effect" title="Show/Hide Details">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="options-btn skeuomorphic-button p-2 text-indigo-600 hover-effect" title="More Options">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <div class="dropdown-content py-1 mt-1">
+                                <a href="#" class="block px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors">View Details</a>
+                                <a href="#" class="block px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors">Transaction History</a>
+                                <a href="#" class="block px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors">Block Card</a>
+                                <a href="#" class="block px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors">Report Lost</a>
+                            </div>
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+                
+                // Animate in the row
+                setTimeout(() => {
+                    tr.style.opacity = '1';
+                    tr.style.transform = 'translateY(0)';
+                    
+                    // Animate progress bar
+                    setTimeout(() => {
+                        const progressBar = tr.querySelector(`.${card.progress_class}`);
+                        progressBar.style.transition = 'width 0.8s ease';
+                        progressBar.style.width = `${card.progress}%`;
+                    }, 300);
+                }, 10);
+
+                // Mobile Card View
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'skeuomorphic-card mb-4 overflow-hidden card-info-container';
+                cardDiv.setAttribute('data-status', card.status);
+                cardDiv.setAttribute('data-type', card.type.toLowerCase());
+                cardDiv.style.opacity = '0';
+                cardDiv.style.transform = 'translateY(10px)';
+                cardDiv.style.transition = `opacity 0.3s ease ${delay}ms, transform 0.3s ease ${delay}ms`;
+                
+                cardDiv.innerHTML = `
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-indigo-50 to-blue-50">
+                        <div class="flex items-center">
+                            <div class="chip-icon mr-3"></div>
+                            <div>
+                                <h3 class="font-semibold">${card.type}</h3>
+                                <p class="text-xs text-gray-600">${card.holder}</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs ${statusClass} font-medium">${card.status.charAt(0).toUpperCase() + card.status.slice(1)}</span>
+                    </div>
+                    <div class="mobile-row">
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">Card Number</p>
+                            <p class="hidden-info card-info text-sm font-mono" data-hidden="true" data-original="${card.number}">${formattedCardNumber}</p>
+                        </div>
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">Expiry Date</p>
+                            <p class="hidden-info card-info text-sm font-mono" data-hidden="true" data-original="${card.expiry}">**/**</p>
+                        </div>
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">CVV</p>
+                            <p class="hidden-info card-info text-sm font-mono" data-hidden="true" data-original="${card.cvv}">***</p>
+                        </div>
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">Serial No.</p>
+                            <p class="text-sm font-mono">${card.serial}</p>
+                        </div>
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">Phone</p>
+                            <p class="text-sm">${card.phone}</p>
+                        </div>
+                        <div class="mobile-card-details">
+                            <p class="mobile-label">Transactions</p>
+                            <div class="relative">
+                                <div class="progress-bar-bg h-2.5">
+                                    <div class="${card.progress_class} h-2.5" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="text-xs mt-1.5 font-medium">${card.progress_display}</div>
+                        </div>
+                    </div>
+                    <div class="p-3 border-t border-gray-200 flex justify-between">
+                        <button class="show-details-btn-mobile skeuomorphic-button px-4 py-2 text-sm text-indigo-600 flex items-center hover-effect">
+                            <i class="bi bi-eye mr-1"></i> Show Details
+                        </button>
+                        <button class="options-btn-mobile skeuomorphic-button px-4 py-2 text-sm text-indigo-600 flex items-center hover-effect">
+                            <i class="bi bi-three-dots-vertical mr-1"></i> Options
+                        </button>
+                    </div>
+                    <div class="mobile-dropdown hidden p-3 border-t border-gray-200">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="skeuomorphic-button p-2.5 text-sm">View Details</button>
+                            <button class="skeuomorphic-button p-2.5 text-sm">Transaction History</button>
+                            <button class="skeuomorphic-button p-2.5 text-sm">Block Card</button>
+                            <button class="skeuomorphic-button p-2.5 text-sm">Report Lost</button>
+                        </div>
+                    </div>`;
+                mobileList.appendChild(cardDiv);
+                
+                // Animate in the mobile card
+                setTimeout(() => {
+                    cardDiv.style.opacity = '1';
+                    cardDiv.style.transform = 'translateY(0)';
+                    
+                    // Animate progress bar
+                    setTimeout(() => {
+                        const progressBar = cardDiv.querySelector(`.${card.progress_class}`);
+                        progressBar.style.transition = 'width 0.8s ease';
+                        progressBar.style.width = `${card.progress}%`;
+                    }, 300);
+                }, 10);
+            });
+
+            initializeEventListeners();
+        }
+
+        function initializeEventListeners() {
+            // Show/Hide Card Details
+            document.querySelectorAll('.show-details-btn, .show-details-btn-mobile').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Find all hidden info elements in the parent row or card
+                    const parent = button.closest('tr') || button.closest('.skeuomorphic-card');
+                    const hiddenInfos = parent.querySelectorAll('.card-info');
+                    const eyeIcon = button.querySelector('i');
+
+                    // Show loading animation
+                    if (button.classList.contains('show-details-btn-mobile')) {
+                        button.innerHTML = '<i class="bi bi-arrow-repeat mr-1 animate-spin"></i> Loading...';
+                        setTimeout(() => {
+                            updateVisibility();
+                        }, 500);
+                    } else {
+                        updateVisibility();
+                    }
+
+                    function updateVisibility() {
+                        hiddenInfos.forEach(info => {
+                            if (info.dataset.hidden === "true") {
+                                // Show original value
+                                info.textContent = info.dataset.original;
+                                info.style.filter = "none";
+                                info.dataset.hidden = "false";
+                                
+                                if (eyeIcon) {
+                                    eyeIcon.classList.remove('bi-eye');
+                                    eyeIcon.classList.add('bi-eye-slash');
+                                }
+                                
+                                if (button.classList.contains('show-details-btn-mobile')) {
+                                    button.innerHTML = '<i class="bi bi-eye-slash mr-1"></i> Hide Details';
+                                }
+                            } else {
+                                // Format card number with ****
+                                if (info.dataset.original.includes(' ')) {
+                                    // It's a card number
+                                    info.textContent = formatCardNumber(info.dataset.original);
+                                } else if (info.dataset.original.includes('/')) {
+                                    // It's an expiry date
+                                    info.textContent = '**/**';
+                                } else if (info.dataset.original.length === 3) {
+                                    // It's a CVV
+                                    info.textContent = '***';
+                                } else {
+                                    info.textContent = '••••••';
+                                }
+                                
+                                info.style.filter = "blur(5px)";
+                                info.dataset.hidden = "true";
+                                
+                                if (eyeIcon) {
+                                    eyeIcon.classList.remove('bi-eye-slash');
+                                    eyeIcon.classList.add('bi-eye');
+                                }
+                                
+                                if (button.classList.contains('show-details-btn-mobile')) {
+                                    button.innerHTML = '<i class="bi bi-eye mr-1"></i> Show Details';
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Toggle Options Dropdown for Desktop View
+            document.querySelectorAll('.options-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Find the dropdown associated with this button
+                    const dropdown = button.nextElementSibling;
+                    const allDropdowns = document.querySelectorAll('.dropdown-content');
+
+                    // Close all other dropdowns
+                    allDropdowns.forEach(d => {
+                        if (d !== dropdown) {
+                            d.style.display = 'none';
+                            d.classList.remove('show');
+                        }
+                    });
+
+                    // Toggle this dropdown
+                    if (dropdown.style.display === 'block') {
+                        dropdown.classList.remove('show');
+                        setTimeout(() => {
+                            dropdown.style.display = 'none';
+                        }, 200);
+                    } else {
+                        dropdown.style.display = 'block';
+                        setTimeout(() => {
+                            dropdown.classList.add('show');
+                        }, 10);
+                    }
+                });
+            });
+
+            // Toggle Options Dropdown for Mobile View
+            document.querySelectorAll('.options-btn-mobile').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const parent = button.closest('.skeuomorphic-card');
+                    const dropdown = parent.querySelector('.mobile-dropdown');
+
+                    // Show loading animation
+                    button.innerHTML = '<i class="bi bi-arrow-repeat mr-1 animate-spin"></i> Loading...';
+
+                    setTimeout(() => {
+                        // Toggle the dropdown
+                        if (dropdown.classList.contains('hidden')) {
+                            dropdown.classList.remove('hidden');
+                            dropdown.style.maxHeight = '0';
+                            dropdown.style.transition = 'max-height 0.3s ease';
+                            setTimeout(() => {
+                                dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+                                button.innerHTML = '<i class="bi bi-x-lg mr-1"></i> Close';
+                            }, 10);
+                        } else {
+                            dropdown.style.maxHeight = '0px';
+                            button.innerHTML = '<i class="bi bi-three-dots-vertical mr-1"></i> Options';
+                            setTimeout(() => {
+                                dropdown.classList.add('hidden');
+                            }, 300);
+                        }
+                    }, 300);
+                });
+            });
+
+            // Close dropdowns when clicking elsewhere on the document
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.options-btn') && !e.target.closest('.dropdown-content')) {
+                    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                        setTimeout(() => {
+                            dropdown.style.display = 'none';
+                        }, 200);
+                    });
+                }
+            });
+
+           // Filtering functionality
+            const searchInput = document.getElementById('search-input');
+            const statusFilter = document.getElementById('status-filter');
+            const typeFilter = document.getElementById('type-filter');
+
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusValue = statusFilter.value;
+                const typeValue = typeFilter.value;
+
+                let visibleCount = 0;
+                const allDesktopRows = Array.from(document.querySelectorAll('#cards-list tr'));
+                const allMobileCards = Array.from(document.querySelectorAll('#mobile-cards-list > div'));
+
+                allDesktopRows.forEach(row => {
+                    const status = row.dataset.status;
+                    const type = row.dataset.type;
+                    const content = row.textContent.toLowerCase();
+
+                    const matchesSearch = searchTerm === '' || content.includes(searchTerm);
+                    const matchesStatus = statusValue === 'all' || status === statusValue;
+                    const matchesType = typeValue === 'all' || type === typeValue;
+
+                    if (matchesSearch && matchesStatus && matchesType) {
+                        row.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        row.classList.add('hidden');
+                    }
+                });
+
+                allMobileCards.forEach(card => {
+                    const status = card.dataset.status;
+                    const type = card.dataset.type;
+                    const content = card.textContent.toLowerCase();
+
+                    const matchesSearch = searchTerm === '' || content.includes(searchTerm);
+                    const matchesStatus = statusValue === 'all' || status === statusValue;
+                    const matchesType = typeValue === 'all' || type === typeValue;
+
+                    if (matchesSearch && matchesStatus && matchesType) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                document.getElementById('cards-count').textContent = `Showing ${visibleCount} cards`;
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+            typeFilter.addEventListener('change', applyFilters);
+
+            // Add New Card button functionality
+            document.getElementById('add-card-btn').addEventListener('click', function() {
+                // Simulate a loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i> Processing...';
+                this.disabled = true;
+
+                setTimeout(() => {
+                    alert('Add new card functionality would open a form dialog!');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 800);
+            });
+            
+            // Export Data button functionality
+            document.getElementById('export-data').addEventListener('click', function() {
+                // Simulate a loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i> Processing...';
+                this.disabled = true;
+
+                setTimeout(() => {
+                    alert('Card data would be exported as CSV or Excel file!');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 800);
+            });
+
+            // Handle card row hover effects
+            document.querySelectorAll('.table-row').forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = 'rgba(238, 242, 255, 0.5)';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+            });
+        }
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchData();
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
